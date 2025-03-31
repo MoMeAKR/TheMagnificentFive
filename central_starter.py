@@ -47,7 +47,7 @@ def ask_llm(messages, model = "gpt-4o"):
     thread.start()
 
     start = time.time()
-    model_answer, call_recap = openai_ask_requests(messages, model)
+    model_answer = openai_ask_requests(messages, model)
     duration = time.time() - start
 
     spinner_active = False
@@ -64,15 +64,16 @@ def ask_llm(messages, model = "gpt-4o"):
         called_by_by = "unknown"
 
     to_print = [["Model", f"{model.upper()}"], 
-                ["Called by", called_by],
-                ["Called by by", called_by_by],
-                ["Input tokens", f"{call_recap['in_tokens']}"], 
-                ["Output tokens", f"{call_recap['out_tokens']}"],
-                ["Gen time", "{:.2f}".format(duration)],
-                ["Tokens/sec","{:.2f}".format(call_recap['out_tokens']/duration)]]
+    #             ["Called by", called_by],
+    #             ["Called by by", called_by_by],
+    #             ["Input tokens", f"{call_recap['in_tokens']}"], 
+    #             ["Output tokens", f"{call_recap['out_tokens']}"],
+                ["Gen time", "{:.2f}".format(duration)]]
+                # ["Tokens/sec","{:.2f}".format(call_recap['out_tokens']/duration)]]
     to_print_formatted = "\n".join([""] + ["{} {} {}".format(p[0], '.'*(max_spacing - (len(p[0]) + len(p[1]))), p[1]) for p in to_print] + [""])
 
     cprint(to_print_formatted, [120,120,120])
+    return model_answer
 
 def cprint(text, color_list, end='\n'): 
     print_rgb_text(color_list[0], color_list[1], color_list[2], text, end=end)
@@ -95,7 +96,8 @@ def openai_ask_requests(messages, model, image_path = None):
     headers = {
         "Content-Type": "application/json",
         "Cache-Control": "no-cache",
-        "api-key": open(os.path.join(os.path.expanduser('~'), ".akr_key.txt"), 'r').read().strip()
+        # "api-key": open(os.path.join(os.path.expanduser('~'), ".akr_key.txt"), 'r').read().strip()
+        "api-key": "METTRE LA CLÉ ICI"
     }
 
 
@@ -120,11 +122,11 @@ def openai_ask_requests(messages, model, image_path = None):
     }
 
     response = requests.post(url, headers=headers, json=data).json()
-    call_recap = {"in_tokens": response['usage']['prompt_tokens'],
-                  "out_tokens": response['usage']['completion_tokens'], 
-        }
+    # call_recap = {"in_tokens": response['usage']['prompt_tokens'],
+    #               "out_tokens": response['usage']['completion_tokens'], 
+    #     }
     
-    return response['choices'][0]['message']['content'], call_recap
+    return response['choices'][0]['message']['content']
 
 
 if __name__ == "__main__": 
@@ -132,4 +134,5 @@ if __name__ == "__main__":
     messages = [{"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Hello, how are you?"}]
     
-    ask_llm(messages, model = "gpt-4o")
+    
+    print(ask_llm(messages, model = "gpt-4o"))
